@@ -1,10 +1,33 @@
-bl_info = {
-    "name": "Say Hello",
-    "blender": (2, 83, 0),
-    "category": "Object",
-}
-
 import bpy
+
+from .comb_bake import bake_from_props
+
+def gather_props( context ):
+    return {
+        'obj' : context.active_object,
+        'uv_name' : context.scene.comb_map_props.uv_name,
+        'ps_name' : context.scene.comb_map_props.ps_name,
+        'img_name' : context.scene.comb_map_props.img_name,
+        
+        'voro_smooth_pts' : context.scene.comb_map_props.voro_smooth_pts,
+        'voro_smooth_exp' : context.scene.comb_map_props.voro_smooth_exp,
+        'voro_smooth_max_angle' : context.scene.comb_map_props.voro_smooth_max_angle,
+    }
+    
+def verify_props( props ):
+    if props['obj'] is None:
+        return {'is_valid': False, 'message':"No Object is selected."}
+    
+    if props['uv_name'] == '':
+        return {'is_valid': False, 'message':"No UVMap is selected."}
+    
+    if props['ps_name'] == '':
+        return {'is_valid': False, 'message':"No Particle System is selected."}
+    
+    if props['img_name'] == '':
+        return {'is_valid': False, 'message':"No Image is selected."}
+    
+    return {'is_valid': True, 'message':None}
 
 class CombMapProps(bpy.types.PropertyGroup):
   obj_name : bpy.props.StringProperty(name="OBJ")
@@ -23,9 +46,16 @@ class COMB_MAP_OT_render(bpy.types.Operator):
     bl_options = {'REGISTER'}  # 'UNDO'
     
     def execute(self, context):
-        print("Rendering...")
-        comb_bake = bpy.data.texts["comb_bake.py"].as_module()
-        comb_bake.bake( {'hek'} )
+        #print("Rendering comb map...")
+        
+        props = gather_props( context )
+        validation = verify_props( props )
+        
+        if not validation['is_valid']:
+            self.report( {'ERROR_INVALID_INPUT'}, validation['message'] )
+            return {'CANCELLED'}
+        
+        bake_from_props( props )
         
         return {'FINISHED'}
 
@@ -35,7 +65,8 @@ class COMB_MAP_OT_render(bpy.types.Operator):
     
     def check(self, context):
         return True
-        
+      
+    """  
     def invoke(self, context, event):
         return context.window_manager.invoke_props_dialog(self, width=240)
     
@@ -43,31 +74,16 @@ class COMB_MAP_OT_render(bpy.types.Operator):
         layout = self.layout
         row = layout.row()
         row.label(text="Wow!")
+    """
         
-class PANEL123_PT_SayHello(bpy.types.Panel): #bpy.types.Operator
-    """Says Hello in console"""      # Use this as a tooltip for menu items and buttons.
-    """
-    bl_idname = "console.hello"        # Unique identifier for buttons and menu items to reference.
-    bl_label = "Say Hello"         # Display name in the interface.
-    bl_options = {'REGISTER'}  # 'UNDO' Enable undo for the operator.
-    """
+class COMB_MAP_PT_bake(bpy.types.Panel): #bpy.types.Operator
+    """A UI panel for the comb bake operator"""
     bl_label = "My Panel"
     bl_idname = "my_panel"
     bl_space_type = 'VIEW_3D'
     bl_region_type = 'UI'
-    bl_category = "Library Texture List"
+    bl_category = "Bake Comb Map"
     #bl_context = "objectmode"
-
-    """
-    def execute(self, context):        # execute() is called when running the operator.
-
-        print( self.text )
-        
-        return {'FINISHED'}            # Lets Blender know the operator finished successfully.
-
-    def invoke(self, context, event):
-        return context.window_manager.invoke_props_dialog(self)
-    """
     
     def draw(self, context):
         layout = self.layout
@@ -97,17 +113,14 @@ class PANEL123_PT_SayHello(bpy.types.Panel): #bpy.types.Operator
 def register():
     bpy.utils.register_class(CombMapProps)
     bpy.utils.register_class(COMB_MAP_OT_render)
-    bpy.utils.register_class(PANEL123_PT_SayHello)
+    bpy.utils.register_class(COMB_MAP_PT_bake)
     bpy.types.Scene.comb_map_props = bpy.props.PointerProperty(type=CombMapProps)
 
 def unregister():
     bpy.utils.unregister_class(CombMapProps)
     bpy.utils.unregister_class(COMB_MAP_OT_render)
-    bpy.utils.unregister_class(PANEL123_PT_SayHello)
+    bpy.utils.unregister_class(COMB_MAP_PT_bake)
     del bpy.types.Scene.comb_map_props
 
-
-# This allows you to run the script directly from Blender's Text editor
-# to test the add-on without having to install it.
 if __name__ == "__main__":
     register()

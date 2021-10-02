@@ -88,16 +88,7 @@ def render_voronoi( img, points, vecs, smoothing_points=4, smoothing_exponent=2.
             mean = mean_weighted_vector( list(map( lambda a:(vecs[a[1]],(a[2]+0.0000001)**-smoothing_exponent) , allowable_points )))
             if ( mean.length <= 0.001 ):
                 mean = nearest_vec
-            append_hsv_to_buf( buffer, (vec_to_hue( mean ), 1.0, 1.0 ))
-            
-            
-                
-            """
-            (co, index, dist) = kd.find((x,y,0))
-            append_hsv_to_buf( buffer, (vec_to_hue(vecs[index]),1.0,1.0) )
-            #write_pixel( img, (x,y), colors[index] )
-            """
-            
+            append_hsv_to_buf( buffer, (vec_to_hue( mean ), 1.0, 1.0 ))          
             
     img.pixels = buffer
 
@@ -119,5 +110,3 @@ def test():
         rand_vecs.append( Vector( (random.uniform(-1,1), random.uniform(-1,1), 0.0 ) ) )
         
     render_voronoi( image, rand_points, rand_vecs, 6, 20.0, 45.0 )
-    
-#test()

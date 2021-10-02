@@ -4,6 +4,8 @@ import colorsys
 from mathutils import Vector
 import numpy as np
 
+from .voronoi_2d_texture import render_voronoi
+
 # gives UV coordinate where hair spawned
 #mod = o.modifiers[0]
 # mod.type = "ParticleSystem"
@@ -80,16 +82,16 @@ def get_coefficients_from_linear_combo(b1, b2, b3, v):
 
 def particle_direction_to_uv_direction(p, o_eval, uvmap_str):
     face_id = get_face_id_from_particle(p, o_eval)
-    print("face_id: " + str(face_id))
+    #print("face_id: " + str(face_id))
     loop_indices = o_eval.data.polygons[face_id].loop_indices
 
     v0 = o_eval.data.vertices[o_eval.data.loops[loop_indices[0]].vertex_index].co
     v1 = o_eval.data.vertices[o_eval.data.loops[loop_indices[1]].vertex_index].co
     v2 = o_eval.data.vertices[o_eval.data.loops[loop_indices[2]].vertex_index].co
 
-    print("v0: " + str(v0))
-    print("v1: " + str(v1))
-    print("v2: " + str(v2))
+    #print("v0: " + str(v0))
+    #print("v1: " + str(v1))
+    #print("v2: " + str(v2))
 
     a = v1 - v0
     b = v2 - v0
@@ -98,42 +100,42 @@ def particle_direction_to_uv_direction(p, o_eval, uvmap_str):
     c = a.cross(b)
 
     v = p.hair_keys[1].co - p.hair_keys[0].co
-    print("v: " + str(v))
+    #print("v: " + str(v))
 
     coefficients = get_coefficients_from_linear_combo(a,b,c,v)
     a_coef = float(coefficients[0])
     b_coef = float(coefficients[1])
-    print("a:" + str(a_coef) + ", b:" + str(b_coef))
+    #print("a:" + str(a_coef) + ", b:" + str(b_coef))
 
     v0_uv = o_eval.data.uv_layers[uvmap_str].data[loop_indices[0]].uv
     v1_uv = o_eval.data.uv_layers[uvmap_str].data[loop_indices[1]].uv
     v2_uv = o_eval.data.uv_layers[uvmap_str].data[loop_indices[2]].uv
 
-    print("v0_uv: " + str(v0_uv))
-    print("v1_uv: " + str(v1_uv))
-    print("v2_uv: " + str(v2_uv))
+    #print("v0_uv: " + str(v0_uv))
+    #print("v1_uv: " + str(v1_uv))
+    #print("v2_uv: " + str(v2_uv))
 
     a_uv = v1_uv - v0_uv
     b_uv = v2_uv - v0_uv
     v_uv = (a_coef * a_uv) + (b_coef * b_uv)
 
-    print("a_coef: " + str(a_coef) + ", b_coef: " + str(b_coef))
-    print("v_uv:" + str(v_uv))
+    #print("a_coef: " + str(a_coef) + ", b_coef: " + str(b_coef))
+    #print("v_uv:" + str(v_uv))
 
     #hue = vec_to_hue(v_uv)
     return v_uv
 
-def bake_comb_to_image( obj, ps_str, uvmap_str, image_str ):
+def bake_comb_to_image( obj, uv_name, ps_name, img_name, voro_smooth_pts, voro_smooth_exp, voro_smooth_max_angle ):
     depsgraph = bpy.context.evaluated_depsgraph_get()
     o_eval = obj.evaluated_get(depsgraph)
-    image = bpy.data.images[image_str]
+    image = bpy.data.images[img_name]
     mod = o_eval.modifiers[0]
     
     voro_points = []
     voro_vecs = []
         
-    for p in o_eval.particle_systems[ps_str].particles:   
-        uv_dir = particle_direction_to_uv_direction(p, o_eval, uvmap_str)
+    for p in o_eval.particle_systems[ps_name].particles:   
+        uv_dir = particle_direction_to_uv_direction(p, o_eval, uv_name)
         uv = p.uv_on_emitter(mod)
         
         voro_vecs.append( Vector( (uv_dir.x, uv_dir.y, 0.0) ) )
@@ -153,23 +155,10 @@ def bake_comb_to_image( obj, ps_str, uvmap_str, image_str ):
         image.pixels[px_byte_offset+2] = rgb[2]
         """
         
-    #image.pixels[0] = 0
-    #image.pixels[1] = 0
-    #image.pixels[2] = 0
-    voronoi2d.render_voronoi( image, voro_points, voro_vecs, 1, 2.0, 20.0 )
+    render_voronoi( image, voro_points, voro_vecs, voro_smooth_pts, voro_smooth_exp, voro_smooth_max_angle )
+        
+def bake_from_props( props ):
+    #print("Baking from props...")
+    bake_comb_to_image( props['obj'], props['uv_name'], props['ps_name'], props['img_name'], props['voro_smooth_pts'], props['voro_smooth_exp'], props['voro_smooth_max_angle'] )
 
-def bake( props ):
-    print("bazinga!")
-    
-    
-def test():
-    #voronoi2d = bpy.data.texts["voronoi_2d_texture.py"].as_module()
-    #voronoi2d.test()
-
-    obj = bpy.context.active_object
-    ps_str = "Hair1"
-    uvmap_str = "UVMap"
-    image_str = "bake_comb_test"
-
-    bake_comb_to_image(obj, ps_str, uvmap_str, image_str)
        

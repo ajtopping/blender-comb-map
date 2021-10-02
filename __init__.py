@@ -1,63 +1,53 @@
 '''
-Copyright (C) CURRENT_YEAR YOUR NAME
-YOUR@MAIL.com
-
-Created by YOUR NAME
-
-    This program is free software: you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published by
-    the Free Software Foundation, either version 3 of the License, or
-    (at your option) any later version.
-
-    This program is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU General Public License for more details.
-
-    You should have received a copy of the GNU General Public License
-    along with this program.  If not, see <http://www.gnu.org/licenses/>.
-    
-    template source: https://github.com/JacquesLucke/code_autocomplete/tree/master/addon_development/addon_templates
+template source: https://github.com/JacquesLucke/code_autocomplete/tree/master/addon_development/addon_templates
 '''
 
 bl_info = {
-    "name": "Comb Bake 2",
+    "name": "Comb Bake",
     "description": "",
     "author": "Fred",
     "version": (0, 0, 1),
-    "blender": (2, 83, 0),
+	"blender": (2, 83, 0),
     "location": "View3D",
-    "warning": "This addon is still in development.",
+    "warning": "Work in progress.",
     "wiki_url": "",
     "category": "Object" }
 
 
 import bpy
 
-
 # load and reload submodules
 ##################################
 
 import importlib
-from . import developer_utils
-importlib.reload(developer_utils)
-modules = developer_utils.setup_addon_modules(__path__, __name__, "bpy" in locals())
+from . import ui
+from . import comb_bake
 
+#from . import comb_bake
+from .ui import CombMapProps, COMB_MAP_OT_render, COMB_MAP_PT_bake
 
+importlib.reload(ui)
+importlib.reload(comb_bake)
+importlib.reload(voronoi_2d_texture)
 
+classes = [CombMapProps, COMB_MAP_OT_render, COMB_MAP_PT_bake]
 # register
 ##################################
 
 import traceback
 
 def register():
-    try: bpy.utils.register_module(__name__)
-    except: traceback.print_exc()
-
-    print("Registered {} with {} modules".format(bl_info["name"], len(modules)))
+    for cls in classes:
+        try: bpy.utils.register_class(cls)
+        except: traceback.print_exc()
+    
+    bpy.types.Scene.comb_map_props = bpy.props.PointerProperty(type=CombMapProps)
+    #print("Registered {} with {} modules".format(bl_info["name"], len(modules)))
 
 def unregister():
-    try: bpy.utils.unregister_module(__name__)
-    except: traceback.print_exc()
+    for cls in classes:
+        try: bpy.utils.unregister_class(cls)
+        except: traceback.print_exc()
 
-    print("Unregistered {}".format(bl_info["name"]))
+    del bpy.types.Scene.comb_map_props
+    #print("Unregistered {}".format(bl_info["name"]))
