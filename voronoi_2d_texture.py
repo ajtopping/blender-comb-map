@@ -75,7 +75,7 @@ def render_voronoi( img, points, vecs, smoothing_points=4, smoothing_exponent=2.
             uv_co = (x/img.size[0],y/img.size[1])
             found_list = kd.find_n( (uv_co[0],uv_co[1],0), smoothing_points ) # [ (co, index, dist), ... ]
             nearest_vec = vecs[found_list[0][1]]
-            
+
             allowable_points = found_list
             
             if ( max_angle_diff < 180.0 ):
@@ -88,6 +88,10 @@ def render_voronoi( img, points, vecs, smoothing_points=4, smoothing_exponent=2.
             mean = mean_weighted_vector( list(map( lambda a:(vecs[a[1]],(a[2]+0.0000001)**-smoothing_exponent) , allowable_points )))
             if ( mean.length <= 0.001 ):
                 mean = nearest_vec
+
+            #mean = nearest_vec
+            #print( str(mean) )
+
             append_hsv_to_buf( buffer, (vec_to_hue( mean ), 1.0, 1.0 ))          
             
     img.pixels = buffer

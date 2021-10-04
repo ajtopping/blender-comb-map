@@ -93,8 +93,10 @@ def particle_direction_to_uv_direction(p, o_eval, uvmap_str):
     #print("v1: " + str(v1))
     #print("v2: " + str(v2))
 
-    a = v1 - v0
-    b = v2 - v0
+    #a = v1 - v0
+    #b = v2 - v0
+    a = v0 - v1
+    b = v2 - v1
 
     # generate a basis vector ortho to a and b
     c = a.cross(b)
@@ -115,8 +117,10 @@ def particle_direction_to_uv_direction(p, o_eval, uvmap_str):
     #print("v1_uv: " + str(v1_uv))
     #print("v2_uv: " + str(v2_uv))
 
-    a_uv = v1_uv - v0_uv
-    b_uv = v2_uv - v0_uv
+    #a_uv = v1_uv - v0_uv
+    #b_uv = v2_uv - v0_uv
+    a_uv = v0_uv - v1_uv
+    b_uv = v2_uv - v1_uv
     v_uv = (a_coef * a_uv) + (b_coef * b_uv)
 
     #print("a_coef: " + str(a_coef) + ", b_coef: " + str(b_coef))
@@ -135,7 +139,7 @@ def bake_comb_to_image( obj, uv_name, ps_name, img_name, voro_smooth_pts, voro_s
     voro_vecs = []
         
     for p in o_eval.particle_systems[ps_name].particles:   
-        uv_dir = particle_direction_to_uv_direction(p, o_eval, uv_name)
+        uv_dir = particle_direction_to_uv_direction(p, o_eval, uv_name) # THIS BOY SPITTING OUT SLIGHTLY WRONG DATA
         uv = p.uv_on_emitter(mod)
         
         voro_vecs.append( Vector( (uv_dir.x, uv_dir.y, 0.0) ) )

@@ -3,7 +3,7 @@ template source: https://github.com/JacquesLucke/code_autocomplete/tree/master/a
 '''
 
 bl_info = {
-    "name": "Comb Bake",
+    "name": "Comb Bake TESTING",
     "description": "",
     "author": "Fred",
     "version": (0, 0, 1),
