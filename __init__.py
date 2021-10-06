@@ -3,11 +3,11 @@ template source: https://github.com/JacquesLucke/code_autocomplete/tree/master/a
 '''
 
 bl_info = {
-    "name": "Comb Bake TESTING",
+    "name": "Comb Bake",
     "description": "",
     "author": "Fred",
-    "version": (0, 0, 1),
-	"blender": (2, 83, 0),
+    "version": (1, 0, 2),
+	"blender": (2, 93, 0),
     "location": "View3D",
     "warning": "Work in progress.",
     "wiki_url": "",
