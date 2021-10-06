@@ -74,7 +74,8 @@ def world_vec_to_object_space(v, o):
 # returns an nparray of 3 coefficients that solve the linear combination: v = a*b1 + b*b2 + c*b3
 # b1, b2, b3, v are 3D vectors
 def get_coefficients_from_linear_combo(b1, b2, b3, v):
-    basis = np.array( [ [b1.x, b1.y, b1.z],[b2.x, b2.y, b2.z],[b3.x, b3.y, b3.z] ] )
+    #basis = np.array( [ [b1.x, b1.y, b1.z],[b2.x, b2.y, b2.z],[b3.x, b3.y, b3.z] ] )
+    basis = np.array( [ [b1.x, b2.x, b3.x],[b1.y, b2.y, b3.y],[b1.z, b2.z, b3.z] ] )
     result = [v.x, v.y, v.z]
     coefficients = np.linalg.solve(basis, result) 
     # print(coefficients)
@@ -93,14 +94,19 @@ def particle_direction_to_uv_direction(p, o_eval, uvmap_str):
     #print("v1: " + str(v1))
     #print("v2: " + str(v2))
 
-    #a = v1 - v0
-    #b = v2 - v0
+    # 1--b--2
+    # |
+    # a
+    # |
+    # 0
+
     a = v0 - v1
     b = v2 - v1
 
     # generate a basis vector ortho to a and b
     c = a.cross(b)
 
+    # object space coordinates
     v = p.hair_keys[1].co - p.hair_keys[0].co
     #print("v: " + str(v))
 
